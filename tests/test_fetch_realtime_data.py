@@ -6,8 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from models import BaseModel
-from models.bus import BusRealtime, BusRouteStop
+from models import BaseModel, BusRealtime, BusRouteStop
 from scripts.realtime import get_realtime_data
 from tests.insert_bus_information import initialize_bus_data
 from utils.database import get_db_engine

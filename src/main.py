@@ -4,7 +4,7 @@ from collections import defaultdict
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
-from models.bus import BusRouteStop
+from models import BusRouteStop
 from scripts.realtime import get_realtime_data
 from utils.database import get_db_engine
 

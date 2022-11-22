@@ -1,9 +1,18 @@
 import datetime
+from typing import Any
 
-from sqlalchemy import PrimaryKeyConstraint, ForeignKey, String, Time
+from sqlalchemy import Table, MetaData, String, Time, PrimaryKeyConstraint, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models import BaseModel
+ModelMeta: Any = declarative_base()
+
+
+class BaseModel(ModelMeta):
+    __abstract__ = True
+
+    __table__: Table
+    metadata: MetaData
 
 
 class BusRoute(BaseModel):
