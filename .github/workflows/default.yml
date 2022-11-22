@@ -1,5 +1,4 @@
-qname: default
-
+name: default
 on: [pull_request, push]
 jobs:
   lint:
