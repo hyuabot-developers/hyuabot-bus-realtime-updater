@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from models import BusStop, BusRoute, BusRouteStop
+from src.models import BusStop, BusRoute, BusRouteStop
 
 
 async def initialize_bus_data(db_session: Session):
