@@ -52,7 +52,7 @@ async def fetch_bus_stop(db_session: Session, keyword: str):
                         region_name=insert_statement.excluded.region_name,
                         latitude=insert_statement.excluded.latitude,
                         longitude=insert_statement.excluded.longitude,
-                    )
+                    ),
                 )
                 db_session.execute(insert_statement)
                 db_session.commit()
@@ -134,7 +134,7 @@ async def insert_bus_route_item(db_session: Session, route_id: str):
                         route_name=insert_statement.excluded.route_name,
                         route_type_code=insert_statement.excluded.route_type_code,
                         route_type_name=insert_statement.excluded.route_type_name,
-                    )
+                    ),
                 )
                 db_session.execute(insert_statement)
                 db_session.commit()
@@ -161,7 +161,7 @@ async def insert_bus_route_stop(db_session: Session):
     insert_statement = insert(BusRouteStop).values(bus_route_stop_list)
     insert_statement = insert_statement.on_conflict_do_update(
         constraint="pk_bus_route_stop",
-        set_=dict(stop_sequence=insert_statement.excluded.stop_sequence)
+        set_=dict(stop_sequence=insert_statement.excluded.stop_sequence),
     )
     db_session.execute(insert_statement)
     db_session.commit()
