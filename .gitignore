@@ -1,3 +1,4 @@
 .idea/
 venv/
 *.pyc
+src/hyuabot_bus_realtime_updater.egg-info/

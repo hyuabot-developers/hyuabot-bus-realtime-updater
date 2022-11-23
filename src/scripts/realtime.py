@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from sqlalchemy import insert, delete
 from sqlalchemy.orm import Session
 
-from models.bus import BusRealtime
+from models import BusRealtime
 
 
 async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: list[str]) -> None:
