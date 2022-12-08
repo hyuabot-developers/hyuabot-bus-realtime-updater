@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 
 from aiohttp import ClientTimeout, ClientSession
 from bs4 import BeautifulSoup
@@ -17,6 +18,7 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
         async with ClientSession(timeout=timeout) as session:
             async with session.get(url) as response:
                 soup = BeautifulSoup(await response.text(), features="xml")
+                query_time = soup.find("response").find("msgHeader").find("queryTime").text
                 arrival_list = soup.find("response").find("msgBody").find_all("busArrivalList")
                 for arrival_item in arrival_list:
                     if int(arrival_item.find("routeId").text) not in route_id_list:
@@ -30,6 +32,7 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
                             "remaining_seat_count": int(arrival_item.find("remainSeatCnt1").text),
                             "remaining_time": int(arrival_item.find("predictTime1").text),
                             "low_plate": int(arrival_item.find("lowPlate1").text) == 1,
+                            "last_updated_time": datetime.strptime(query_time, "%Y-%m-%d %H:%M:%S.%f"),
                         })
                     if arrival_item.find("locationNo2").text:
                         arrival_items.append({
@@ -40,6 +43,7 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
                             "remaining_seat_count": int(arrival_item.find("remainSeatCnt2").text),
                             "remaining_time": int(arrival_item.find("predictTime2").text),
                             "low_plate": int(arrival_item.find("lowPlate2").text) == 1,
+                            "last_updated_time": datetime.strptime(query_time, "%Y-%m-%d %H:%M:%S.%f"),
                         })
                 db_session.execute(delete(BusRealtime))
                 if arrival_items:
