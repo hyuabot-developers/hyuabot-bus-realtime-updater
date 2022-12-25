@@ -1,10 +1,10 @@
 import asyncio
 from collections import defaultdict
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import sessionmaker
 
-from models import BusRouteStop
+from models import BusRouteStop, BusRealtime
 from scripts.realtime import get_realtime_data
 from utils.database import get_db_engine
 
@@ -19,6 +19,7 @@ async def main():
     stop_group = defaultdict(list)
     stop_query = select(BusRouteStop.stop_id, BusRouteStop.route_id)
     session.execute(stop_query)
+    session.execute(delete(BusRealtime))
     for stop_id, route_id in session.execute(stop_query):
         stop_group[stop_id].append(route_id)
     job_list = []

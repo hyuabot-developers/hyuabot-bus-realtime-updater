@@ -45,7 +45,6 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
                             "low_plate": int(arrival_item.find("lowPlate2").text) == 1,
                             "last_updated_time": datetime.strptime(query_time, "%Y-%m-%d %H:%M:%S.%f"),
                         })
-                db_session.execute(delete(BusRealtime))
                 if arrival_items:
                     insert_statement = insert(BusRealtime).values(arrival_items)
                     db_session.execute(insert_statement)
