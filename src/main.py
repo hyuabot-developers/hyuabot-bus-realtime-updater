@@ -1,8 +1,8 @@
 import asyncio
 from collections import defaultdict
 
-import sqlalchemy
 from sqlalchemy import select, delete
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
 from models import BusRouteStop, BusRealtime
@@ -18,7 +18,7 @@ async def main():
         raise RuntimeError("Failed to get db session")
     try:
         await execute_script(session)
-    except sqlalchemy.exc.OperationalError:
+    except OperationalError:
         connection = get_master_db_engine()
         session_constructor = sessionmaker(bind=connection)
         session = session_constructor()
