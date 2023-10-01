@@ -54,6 +54,6 @@ class BusRealtime(BaseModel):
     arrival_sequence: Mapped[int] = mapped_column(nullable=False)
     remaining_stop_count: Mapped[int] = mapped_column(nullable=False)
     remaining_seat_count: Mapped[int] = mapped_column(nullable=False)
-    remaining_time: Mapped[int] = mapped_column(nullable=False)
+    remaining_time: Mapped[datetime.timedelta] = mapped_column(nullable=False)
     low_plate: Mapped[bool] = mapped_column(nullable=False)
     last_updated_time: Mapped[datetime.datetime] = mapped_column(nullable=False)
