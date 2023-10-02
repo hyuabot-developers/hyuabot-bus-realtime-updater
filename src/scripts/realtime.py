@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from aiohttp import ClientTimeout, ClientSession
 from bs4 import BeautifulSoup
-from sqlalchemy import insert, delete
+from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
 from models import BusRealtime

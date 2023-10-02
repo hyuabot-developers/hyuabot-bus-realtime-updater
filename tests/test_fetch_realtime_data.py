@@ -1,5 +1,6 @@
 import asyncio
 from collections import defaultdict
+from datetime import timedelta
 
 import pytest
 from sqlalchemy import select
@@ -56,5 +57,5 @@ class TestFetchRealtimeData:
             assert type(arrival_item.arrival_sequence) == int
             assert type(arrival_item.remaining_stop_count) == int
             assert type(arrival_item.remaining_seat_count) == int
-            assert type(arrival_item.remaining_time) == int
+            assert type(arrival_item.remaining_time) == timedelta
             assert type(arrival_item.low_plate) == bool
