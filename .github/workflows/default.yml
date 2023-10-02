@@ -47,7 +47,7 @@ jobs:
         fi
         python -m mypy --no-color-output src/ tests
   test:
-    runs-on: [self-hosted, X64, Linux, Lab]
+    runs-on: [self-hosted, X64, Linux]
     env:
       POSTGRES_ID: test
       POSTGRES_PASSWORD: test
