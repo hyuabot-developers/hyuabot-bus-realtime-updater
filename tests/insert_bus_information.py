@@ -155,8 +155,8 @@ async def insert_bus_route_stop(db_session: Session):
         dict(route_id="216000068", stop_id="216000138", stop_sequence=28),  # 10-1(상록수역3번출구)
         dict(route_id="216000016", stop_id="216000152", stop_sequence=16),  # 62(성안길입구)
         dict(route_id="217000014", stop_id="216000070", stop_sequence=31),  # 110(한양대입구)
-        dict(route_id="216000001", stop_id="216000070", stop_sequence=20),  # 707(한양대입구)
-        dict(route_id="200000015", stop_id="216000070", stop_sequence=50),  # 909(한양대입구)
+        dict(route_id="216000104", stop_id="216000070", stop_sequence=20),  # 7070(한양대입구)
+        dict(route_id="200000015", stop_id="216000070", stop_sequence=50),  # 9090(한양대입구)
     ]
     insert_statement = insert(BusRouteStop).values(bus_route_stop_list)
     insert_statement = insert_statement.on_conflict_do_update(
