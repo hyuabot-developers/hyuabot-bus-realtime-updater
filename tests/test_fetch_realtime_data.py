@@ -1,6 +1,6 @@
 import asyncio
 from collections import defaultdict
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import pytest
 from sqlalchemy import select
@@ -59,4 +59,4 @@ class TestFetchRealtimeData:
             assert isinstance(arrival_item.remaining_seat_count, int)
             assert isinstance(arrival_item.remaining_time, timedelta)
             assert isinstance(arrival_item.low_plate, bool)
-            assert isinstance(arrival_item.last_updated_time, timedelta)
+            assert isinstance(arrival_item.last_updated_time, datetime)
