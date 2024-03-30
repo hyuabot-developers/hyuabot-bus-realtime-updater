@@ -52,10 +52,11 @@ class TestFetchRealtimeData:
         # Check if the data is inserted
         arrival_list = session.query(BusRealtime).all()
         for arrival_item in arrival_list:  # type: BusRealtime
-            assert type(arrival_item.route_id) == int
-            assert type(arrival_item.stop_id) == int
-            assert type(arrival_item.arrival_sequence) == int
-            assert type(arrival_item.remaining_stop_count) == int
-            assert type(arrival_item.remaining_seat_count) == int
-            assert type(arrival_item.remaining_time) == timedelta
-            assert type(arrival_item.low_plate) == bool
+            assert isinstance(arrival_item.route_id, int)
+            assert isinstance(arrival_item.stop_id, int)
+            assert isinstance(arrival_item.arrival_sequence, int)
+            assert isinstance(arrival_item.remaining_stop_count, int)
+            assert isinstance(arrival_item.remaining_seat_count, int)
+            assert isinstance(arrival_item.remaining_time, timedelta)
+            assert isinstance(arrival_item.low_plate, bool)
+            assert isinstance(arrival_item.last_updated_time, timedelta)
