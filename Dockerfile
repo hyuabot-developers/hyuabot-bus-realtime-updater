@@ -1,5 +1,5 @@
-FROM python:3.11-alpine AS build
-RUN python3.11 -m venv /venv && \
+FROM python:3.12-alpine AS build
+RUN python3.12 -m venv /venv && \
     /venv/bin/pip install --upgrade pip setuptools wheel
 
 COPY setup.cfg /setup.cfg
