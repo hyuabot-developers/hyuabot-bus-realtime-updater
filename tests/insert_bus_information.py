@@ -1,11 +1,11 @@
 import asyncio
 
 from aiohttp import ClientSession, ClientTimeout
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from models import BusStop, BusRoute, BusRouteStop
+from models import BusRoute, BusStop, BusRouteStop
 
 
 async def initialize_bus_data(db_session: Session):
@@ -15,7 +15,7 @@ async def initialize_bus_data(db_session: Session):
 
 
 async def insert_bus_stop(db_session: Session):
-    keywords = ["경기테크노파크", "한양대", "한국생산기술연구원", "성안길입구", "신안산대학교",
+    keywords = ["경기테크노파크", "한양대", "한국생산기술연구원", "성안길입구", "신안산대학교", "원시역",
                 "새솔고", "상록수역", "수원역", "강남역우리은행", "본오동", "한라비발디1차", "푸르지오6차후문",
                 "선부동차고지", "안산역", "경인합섬앞", "오목천차고지"]
     tasks = [fetch_bus_stop(db_session, keyword) for keyword in keywords]
@@ -31,7 +31,13 @@ async def fetch_bus_stop(db_session: Session, keyword: str):
         async with ClientSession(timeout=timeout) as session:
             async with session.get(url) as response:
                 soup = BeautifulSoup(await response.text(), features="xml")
-                station_list = soup.find("response").find("msgBody").find_all("busStationList")
+                response_item = soup.find("response")
+                if response_item is None:
+                    return
+                message_body = response_item.find("msgBody")
+                if not isinstance(message_body, Tag):
+                    return
+                station_list = message_body.find_all("busStationList")
                 for station in station_list:
                     stop_list.append(dict(
                         stop_id=station.find("stationId").text,
@@ -63,7 +69,7 @@ async def fetch_bus_stop(db_session: Session, keyword: str):
 
 
 async def insert_bus_route(db_session: Session):
-    routes = ["10-1", "62", "3100", "3101", "3102", "110", "707", "909"]
+    routes = ["10-1", "62", "3100", "3101", "3102", "110", "7070", "9090", "707-1"]
     tasks = [fetch_bus_route_list(db_session, route) for route in routes]
     await asyncio.gather(*tasks)
     db_session.commit()
@@ -77,7 +83,13 @@ async def fetch_bus_route_list(db_session: Session, keyword: str):
         async with ClientSession(timeout=timeout) as session:
             async with session.get(url) as response:
                 soup = BeautifulSoup(await response.text(), features="xml")
-                route_search_list = soup.find("response").find("msgBody").find_all("busRouteList")
+                response_item = soup.find("response")
+                if response_item is None:
+                    return
+                message_body = response_item.find("msgBody")
+                if not isinstance(message_body, Tag):
+                    return
+                route_search_list = message_body.find_all("busRouteList")
                 for route in route_search_list:
                     if "안산" in route.find("regionName").text:
                         route_list.append(route.find("routeId").text)
@@ -98,9 +110,16 @@ async def insert_bus_route_item(db_session: Session, route_id: str):
         async with ClientSession(timeout=timeout) as session:
             async with session.get(url) as response:
                 soup = BeautifulSoup(await response.text(), features="xml")
-                route_search_item = soup.find("response").find("msgBody").find("busRouteInfoItem")
-                if route_search_item is None:
+                response_item = soup.find("response")
+                if response_item is None:
                     return
+                message_body = response_item.find("msgBody")
+                if not isinstance(message_body, Tag):
+                    return
+                route_search_result = message_body.find_all("busRouteInfoItem")
+                if len(route_search_result) == 0:
+                    return
+                route_search_item = route_search_result[0]
                 route_list.append(dict(
                     company_id=route_search_item.find("companyId").text,
                     company_name=route_search_item.find("companyName").text,
