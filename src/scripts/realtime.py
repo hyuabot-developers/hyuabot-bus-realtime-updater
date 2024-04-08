@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 
 from aiohttp import ClientTimeout, ClientSession
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
@@ -18,8 +18,18 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
         async with ClientSession(timeout=timeout) as session:
             async with session.get(url) as response:
                 soup = BeautifulSoup(await response.text(), features="xml")
-                query_time = soup.find("response").find("msgHeader").find("queryTime").text
-                arrival_list = soup.find("response").find("msgBody").find_all("busArrivalList")
+                response_item = soup.find("response")
+                if response_item is None:
+                    return
+                message_header = response_item.find("msgHeader")
+                message_body = response_item.find("msgBody")
+                if not isinstance(message_header, Tag) or not isinstance(message_body, Tag):
+                    return
+                query_time_item = message_header.find("queryTime")
+                arrival_list = message_body.find_all("busArrivalList")
+                if query_time_item is None or not arrival_list:
+                    return
+                query_time = query_time_item.text
                 tz = timezone(timedelta(hours=9))
                 for arrival_item in arrival_list:
                     if int(arrival_item.find("routeId").text) not in route_id_list:
