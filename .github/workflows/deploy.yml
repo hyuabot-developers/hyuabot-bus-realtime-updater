@@ -1,14 +1,16 @@
 name: Docker Image Build
 on:
-  push:
+  pull_request:
     branches:
       - main
+    types:
+      - closed
   workflow_dispatch:
 jobs:
   docker-image-build:
     runs-on: [self-hosted, ARM64, Linux]
     env:
-      IMAGE_NAME: localhost:32000/hyuabot/hyuabot-bus-realtime-updater:latest
+      IMAGE_NAME: localhost:5000/hyuabot-bus-realtime-updater:latest
     steps:
     - uses: actions/checkout@v4
     - name: Set up Docker Build Environment

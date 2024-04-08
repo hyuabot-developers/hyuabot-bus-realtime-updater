@@ -1,16 +1,19 @@
 FROM python:3.12-alpine AS build
-RUN python3.12 -m venv /venv && \
-    /venv/bin/pip install --upgrade pip setuptools wheel
+RUN python3.12 -m pip install --upgrade pip setuptools wheel
 
-COPY setup.cfg /setup.cfg
-COPY setup.py /setup.py
-COPY src /src
-RUN apk add --no-cache --virtual .build-deps gcc libc-dev libxslt-dev && \
+WORKDIR /app
+COPY setup.cfg .
+COPY setup.py .
+COPY src ./src
+RUN apk add --no-cache --virtual .build-deps gcc libc-dev libxslt-dev libpq-dev && \
     apk add --no-cache libxslt && \
-    /venv/bin/pip install --disable-pip-version-check -e / && \
+    python3.12 -m pip install --disable-pip-version-check -e . && \
     apk del .build-deps
 
-COPY . .
-WORKDIR /src
+FROM python:3.12-alpine AS runtime
 
-ENTRYPOINT ["/venv/bin/python3", "main.py"]
+COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=build /app /app
+WORKDIR /app/src
+
+ENTRYPOINT ["python3.12", "main.py"]
