@@ -38,7 +38,7 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
                         arrival_items.append({
                             "route_id": int(arrival_item.find("routeId").text),
                             "stop_id": stop_id,
-                            "arrival_sequence": 1,
+                            "arrival_seq": 1,
                             "remaining_stop_count": int(arrival_item.find("locationNo1").text),
                             "remaining_seat_count": int(arrival_item.find("remainSeatCnt1").text),
                             "remaining_time": timedelta(minutes=int(arrival_item.find("predictTime1").text)),
@@ -50,7 +50,7 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
                         arrival_items.append({
                             "route_id": int(arrival_item.find("routeId").text),
                             "stop_id": stop_id,
-                            "arrival_sequence": 2,
+                            "arrival_seq": 2,
                             "remaining_stop_count": int(arrival_item.find("locationNo2").text),
                             "remaining_seat_count": int(arrival_item.find("remainSeatCnt2").text),
                             "remaining_time": timedelta(minutes=int(arrival_item.find("predictTime2").text)),

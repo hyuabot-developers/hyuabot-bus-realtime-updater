@@ -54,7 +54,7 @@ class TestFetchRealtimeData:
         for arrival_item in arrival_list:  # type: BusRealtime
             assert isinstance(arrival_item.route_id, int)
             assert isinstance(arrival_item.stop_id, int)
-            assert isinstance(arrival_item.arrival_sequence, int)
+            assert isinstance(arrival_item.arrival_seq, int)
             assert isinstance(arrival_item.remaining_stop_count, int)
             assert isinstance(arrival_item.remaining_seat_count, int)
             assert isinstance(arrival_item.remaining_time, timedelta)
