@@ -17,7 +17,7 @@ async def initialize_bus_data(db_session: Session):
 async def insert_bus_stop(db_session: Session):
     keywords = ["경기테크노파크", "한양대", "한국생산기술연구원", "성안길입구", "신안산대학교", "원시역",
                 "새솔고", "상록수역", "수원역", "강남역우리은행", "본오동", "한라비발디1차", "푸르지오6차후문",
-                "선부동차고지", "안산역", "경인합섬앞", "오목천차고지"]
+                "선부동차고지", "안산역", "경인합섬앞", "오목천차고지", "안산해솔초등학교"]
     tasks = [fetch_bus_stop(db_session, keyword) for keyword in keywords]
     await asyncio.gather(*tasks)
     db_session.commit()
