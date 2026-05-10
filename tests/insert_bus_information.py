@@ -165,22 +165,23 @@ async def insert_bus_route_item(db_session: Session, route_id: str):
 
 async def insert_bus_route_stop(db_session: Session):
     bus_route_stop_list = [
-        dict(route_id="216000026", stop_id="216000719", stop_sequence=12),  # 3100(한양대정문)
-        dict(route_id="216000096", stop_id="216000719", stop_sequence=12),  # 3100N(한양대정문)
-        dict(route_id="216000043", stop_id="216000719", stop_sequence=12),  # 3101(한양대정문)
-        dict(route_id="216000070", stop_id="216000719", stop_sequence=10),  # 707-1(한양대정문)
-        dict(route_id="216000061", stop_id="216000379", stop_sequence=19),  # 3102(ERICA컨벤션센터)
-        dict(route_id="216000068", stop_id="216000379", stop_sequence=21),  # 10-1(ERICA컨벤션센터)
-        dict(route_id="216000068", stop_id="216000138", stop_sequence=28),  # 10-1(상록수역3번출구)
-        dict(route_id="216000016", stop_id="216000152", stop_sequence=16),  # 62(성안길입구)
-        dict(route_id="217000014", stop_id="216000070", stop_sequence=31),  # 110(한양대입구)
-        dict(route_id="216000104", stop_id="216000070", stop_sequence=20),  # 7070(한양대입구)
-        dict(route_id="200000015", stop_id="216000070", stop_sequence=50),  # 9090(한양대입구)
+        dict(route_id="216000026", stop_id="216000719", stop_seq=12, start_stop_id="217000292"),  # 3100(한양대정문)
+        dict(route_id="216000096", stop_id="216000719", stop_seq=12, start_stop_id="217000292"),  # 3100N(한양대정문)
+        dict(route_id="216000043", stop_id="216000719", stop_seq=12, start_stop_id="217000292"),  # 3101(한양대정문)
+        dict(route_id="216000061", stop_id="216000379", stop_seq=19, start_stop_id="233003145"),  # 3102(ERICA컨벤션센터)
+        dict(route_id="216000068", stop_id="216000379", stop_seq=21, start_stop_id="216000358"),  # 10-1(ERICA컨벤션센터)
+        dict(route_id="216000068", stop_id="216000138", stop_seq=28, start_stop_id="216000138"),  # 10-1(상록수역3번출구)
+        dict(route_id="216000016", stop_id="216000152", stop_seq=16, start_stop_id="216000053"),  # 62(성안길입구)
+        dict(route_id="216000104", stop_id="216000070", stop_seq=20, start_stop_id="217000293"),  # 7070(한양대입구)
+        dict(route_id="200000015", stop_id="216000070", stop_seq=50, start_stop_id="217000626"),  # 9090(한양대입구)
     ]
     insert_statement = insert(BusRouteStop).values(bus_route_stop_list)
     insert_statement = insert_statement.on_conflict_do_update(
-        constraint="pk_bus_route_stop",
-        set_=dict(stop_sequence=insert_statement.excluded.stop_sequence),
+        index_elements=["route_id", "stop_id"],
+        set_=dict(
+            stop_seq=insert_statement.excluded.stop_seq,
+            start_stop_id=insert_statement.excluded.start_stop_id,
+        ),
     )
     db_session.execute(insert_statement)
     db_session.commit()

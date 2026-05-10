@@ -60,6 +60,16 @@ async def get_realtime_data(db_session: Session, stop_id: str, route_id_list: li
                         })
                 if arrival_items:
                     insert_statement = insert(BusRealtime).values(arrival_items)
+                    insert_statement = insert_statement.on_conflict_do_update(
+                        index_elements=["route_id", "stop_id", "arrival_seq"],
+                        set_=dict(
+                            remaining_stop_count=insert_statement.excluded.remaining_stop_count,
+                            remaining_seat_count=insert_statement.excluded.remaining_seat_count,
+                            remaining_time=insert_statement.excluded.remaining_time,
+                            low_plate=insert_statement.excluded.low_plate,
+                            last_updated_time=insert_statement.excluded.last_updated_time,
+                        ),
+                    )
                     db_session.execute(insert_statement)
                 db_session.commit()
     except asyncio.exceptions.TimeoutError:
