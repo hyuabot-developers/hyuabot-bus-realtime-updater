@@ -48,10 +48,10 @@ class BusRouteStop(BaseModel):
 class BusRealtime(BaseModel):
     __tablename__ = "bus_realtime"
     __table_args__ = (PrimaryKeyConstraint(
-        "route_id", "stop_id", "arrival_sequence", name="pk_bus_realtime"),)
+        "route_id", "stop_id", "arrival_seq", name="pk_bus_realtime"),)
     stop_id: Mapped[int] = mapped_column(ForeignKey("bus_stop.stop_id"), nullable=False)
     route_id: Mapped[int] = mapped_column(ForeignKey("bus_route.route_id"), nullable=False)
-    arrival_sequence: Mapped[int] = mapped_column(nullable=False)
+    arrival_seq: Mapped[int] = mapped_column(nullable=False)
     remaining_stop_count: Mapped[int] = mapped_column(nullable=False)
     remaining_seat_count: Mapped[int] = mapped_column(nullable=False)
     remaining_time: Mapped[datetime.timedelta] = mapped_column(nullable=False)
