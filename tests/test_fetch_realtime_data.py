@@ -1,14 +1,12 @@
 import asyncio
-from collections import defaultdict
 from datetime import timedelta, datetime
 
 import pytest
-from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from models import BaseModel, BusRealtime, BusRouteStop
-from scripts.realtime import get_realtime_data
+from models import BaseModel, BusRealtime
+from main import execute_script
 from utils.database import get_db_engine
 from tests.insert_bus_information import initialize_bus_data
 
@@ -38,16 +36,7 @@ class TestFetchRealtimeData:
         session_constructor = sessionmaker(bind=connection)
         # Database session check
         session = session_constructor()
-        # Get list to fetch
-        stop_group = defaultdict(list)
-        stop_query = select(BusRouteStop.stop_id, BusRouteStop.route_id)
-        session.execute(stop_query)
-        for stop_id, route_id in session.execute(stop_query):
-            stop_group[stop_id].append(route_id)
-        job_list = []
-        for stop_id, route_id_list in stop_group.items():
-            job_list.append(get_realtime_data(session, stop_id, route_id_list))
-        await asyncio.gather(*job_list)
+        await execute_script(session)
 
         # Check if the data is inserted
         arrival_list = session.query(BusRealtime).all()

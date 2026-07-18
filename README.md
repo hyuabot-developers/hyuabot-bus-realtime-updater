@@ -6,9 +6,10 @@ A recurring job that fetches real-time bus arrival information and keeps the HYU
 
 On each run the job:
 
-1. Deletes all existing records from `bus_realtime` (stale data).
-2. Calls the public bus API for each tracked stop.
-3. Inserts fresh arrival predictions into `bus_realtime`.
+1. Calls the public bus API concurrently for each tracked stop.
+2. Replaces the stored snapshot only for stops that returned a successful response.
+3. Clears a stop's stale arrivals when the API successfully returns no active buses.
+4. Preserves the previous snapshot for stops whose request failed or timed out.
 
 ## Architecture
 
