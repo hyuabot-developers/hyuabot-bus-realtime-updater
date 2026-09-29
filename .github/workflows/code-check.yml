@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, docker-ready-250]
     steps:
     - uses: actions/checkout@v7
     - name: Set up Python 3.12
@@ -36,7 +36,7 @@ jobs:
         fi
         python -m flake8 src/ tests
   typecheck:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, docker-ready-250]
     steps:
     - uses: actions/checkout@v7
     - name: Set up Python 3.12
@@ -63,7 +63,7 @@ jobs:
         fi
         python -m mypy --no-color-output src/ tests
   test:
-    runs-on: [self-hosted, Linux, X64, docker]
+    runs-on: [self-hosted, Linux, X64, docker, docker-ready-250]
     env:
       POSTGRES_ID: test
       POSTGRES_PASSWORD: test
