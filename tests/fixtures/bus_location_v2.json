@@ -1,0 +1,19 @@
+{
+  "response": {
+    "header": { "resultCode": "0" },
+    "body": {
+      "items": [
+        {
+          "plateNo": "경기70아1234",
+          "stationSeq": "1",
+          "stationId": "200000001",
+          "crowded": "2",
+          "remainSeatCnt": "12",
+          "lowPlate": "1",
+          "stateCd": "2",
+          "lastUpdateTime": "2026-10-04T10:00:00+09:00"
+        }
+      ]
+    }
+  }
+}

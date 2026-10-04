@@ -1,0 +1,25 @@
+{
+  "response": {
+    "header": { "resultCode": "0", "resultMessage": "정상" },
+    "body": {
+      "items": [
+        {
+          "routeId": "1001",
+          "stationNm1": "한대앞역",
+          "plateNo1": "경기70아1234",
+          "locationNo1": "3",
+          "predictTime1": "5",
+          "remainSeatCnt1": "12",
+          "lowPlate1": "1",
+          "crowded1": "2",
+          "stateCd1": "2",
+          "locationNo2": "-1"
+        },
+        {
+          "routeId": "9999",
+          "locationNo1": "1"
+        }
+      ]
+    }
+  }
+}
