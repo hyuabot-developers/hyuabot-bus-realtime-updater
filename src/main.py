@@ -9,24 +9,25 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
 from models import BusRouteStop, BusRealtime
+from scripts.location import refresh_bus_route_data
 from scripts.realtime import BusRealtimeSnapshot, get_realtime_data
 from utils.database import get_db_engine, get_master_db_engine
 
 
-async def main():
+async def main(iteration: int = 0):
     connection = get_db_engine()
     try:
-        await execute_with_connection(connection)
+        await execute_with_connection(connection, iteration)
     except OperationalError:
         connection = get_master_db_engine()
-        await execute_with_connection(connection)
+        await execute_with_connection(connection, iteration)
 
 
-async def execute_with_connection(connection):
+async def execute_with_connection(connection, iteration: int = 0):
     session_constructor = sessionmaker(bind=connection)
     session = session_constructor()
     try:
-        await execute_script(session)
+        await execute_script(session, iteration)
     except Exception:
         session.rollback()
         raise
@@ -34,7 +35,7 @@ async def execute_with_connection(connection):
         session.close()
 
 
-async def execute_script(session):
+async def execute_script(session, iteration: int = 0):
     stop_group = defaultdict(list)
     stop_query = select(BusRouteStop.stop_id, BusRouteStop.route_id)
     for stop_id, route_id in session.execute(stop_query):
@@ -57,6 +58,11 @@ async def execute_script(session):
         if snapshot.arrival_items:
             insert_statement = insert(BusRealtime).values(snapshot.arrival_items)
             session.execute(insert_statement)
+    if iteration == 0:
+        try:
+            await refresh_bus_route_data(session)
+        except Exception as error:  # noqa: BLE001 - route/location data is additive
+            print("Bus location and route-stop refresh skipped:", error)
     session.commit()
 
 
@@ -70,7 +76,7 @@ async def run_loop():
     for i in range(iterations):
         started_at = time.monotonic()
         try:
-            await main()
+            await main(i)
         except Exception as e:  # noqa: BLE001 - keep loop alive on transient errors
             print("Bus realtime iteration failed:", e)
         if i < iterations - 1:

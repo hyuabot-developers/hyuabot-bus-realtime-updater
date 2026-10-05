@@ -1,0 +1,17 @@
+<response>
+  <msgHeader>
+    <resultCode>0</resultCode>
+    <resultMessage>정상적으로 처리되었습니다.</resultMessage>
+    <queryTime>2026-10-04 10:00:00</queryTime>
+  </msgHeader>
+  <msgBody>
+    <busArrivalList>
+      <routeId>1001</routeId>
+      <locationNo1>3</locationNo1>
+      <remainSeatCnt1>12</remainSeatCnt1>
+      <predictTime1>5</predictTime1>
+      <lowPlate1>1</lowPlate1>
+      <locationNo2></locationNo2>
+    </busArrivalList>
+  </msgBody>
+</response>

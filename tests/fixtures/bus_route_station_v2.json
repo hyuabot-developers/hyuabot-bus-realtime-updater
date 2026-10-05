@@ -1,0 +1,10 @@
+{
+  "response": {
+    "header": { "resultCode": "0" },
+    "body": {
+      "items": [
+        { "stationSeq": "1", "stationId": "200000001", "stationName": "한대앞역" }
+      ]
+    }
+  }
+}

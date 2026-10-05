@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import String, Time, PrimaryKeyConstraint, ForeignKey
+from sqlalchemy import String, Time, PrimaryKeyConstraint, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 
 
@@ -58,3 +58,31 @@ class BusRealtime(BaseModel):
     remaining_time: Mapped[datetime.timedelta] = mapped_column(nullable=False)
     low_plate: Mapped[bool] = mapped_column(nullable=False)
     last_updated_time: Mapped[datetime.datetime] = mapped_column(nullable=False)
+    current_stop_name: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    plate_no: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    crowded: Mapped[int | None] = mapped_column(nullable=True)
+    state_code: Mapped[int | None] = mapped_column(nullable=True)
+
+
+class BusRouteStation(BaseModel):
+    __tablename__ = "bus_route_station"
+    __table_args__ = (PrimaryKeyConstraint("route_id", "station_seq", name="pk_bus_route_station"),)
+    route_id: Mapped[int] = mapped_column(ForeignKey("bus_route.route_id"), nullable=False)
+    station_seq: Mapped[int] = mapped_column(nullable=False)
+    station_id: Mapped[int] = mapped_column(nullable=False)
+    station_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class BusLocation(BaseModel):
+    __tablename__ = "bus_location"
+    __table_args__ = (PrimaryKeyConstraint("route_id", "plate_no", name="pk_bus_location"),)
+    route_id: Mapped[int] = mapped_column(ForeignKey("bus_route.route_id"), nullable=False)
+    plate_no: Mapped[str] = mapped_column(String(20), nullable=False)
+    station_seq: Mapped[int] = mapped_column(nullable=False)
+    station_id: Mapped[int | None] = mapped_column(nullable=True)
+    crowded: Mapped[int | None] = mapped_column(nullable=True)
+    remaining_seat_count: Mapped[int | None] = mapped_column(nullable=True)
+    low_plate: Mapped[bool | None] = mapped_column(nullable=True)
+    state_code: Mapped[int | None] = mapped_column(nullable=True)
+    last_updated_time: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
