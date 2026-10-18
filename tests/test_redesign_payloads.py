@@ -115,3 +115,18 @@ def test_bus_v2_auth_error_falls_back_to_v1_fixture(monkeypatch):
     assert len(session.calls) == 2
     assert snapshot.arrival_items[0]["remaining_stop_count"] == 3
     assert snapshot.arrival_items[0]["current_stop_name"] is None
+
+
+def test_bus_v2_no_data_result_code_is_an_empty_snapshot_without_fallback(monkeypatch):
+    monkeypatch.setenv("BUS_API_KEY", "fixture-key")
+    session = FakeSession([
+        FakeResponse({"response": {"header": {"resultCode": "4"}, "body": {"items": []}}}, True),
+    ])
+
+    with patch("scripts.realtime.ClientSession", return_value=session):
+        snapshot = asyncio.run(get_realtime_data(7001, [1001]))
+
+    assert len(session.calls) == 1
+    assert snapshot.stop_id == 7001
+    assert snapshot.route_ids == (1001,)
+    assert snapshot.arrival_items == []
