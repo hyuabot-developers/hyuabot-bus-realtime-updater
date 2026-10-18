@@ -18,6 +18,9 @@ class BusRealtimeSnapshot:
 LEGACY_URL = "http://openapi.gbis.go.kr/ws/rest/busarrivalservice/station"
 V2_URL = "https://apis.data.go.kr/6410000/busarrivalservice/v2/getBusArrivalListv2"
 SAMPLE_API_KEY = "1234567890"
+# GBIS result code "4": no buses are currently running for the stop. It is a
+# valid empty answer, not a failure, so the stop's stale rows should be cleared.
+NO_DATA_RESULT_CODES = {"4"}
 
 
 def required_text(parent: Tag, name: str) -> str:
@@ -63,6 +66,8 @@ def _v2_items(payload: dict[str, Any]) -> list[dict[str, Any]]:
     response = payload.get("response", payload)
     header = response.get("header", response.get("msgHeader", {}))
     result_code = str(header.get("resultCode", header.get("resultCode", "0")))
+    if result_code in NO_DATA_RESULT_CODES:
+        return []
     if result_code not in {"0", "00"}:
         message = header.get("resultMessage", header.get("resultMsg", "unknown error"))
         raise RuntimeError(f"GBIS v2 request failed ({result_code}): {message}")
@@ -119,6 +124,8 @@ def parse_realtime_data(response_text: str, stop_id: int, route_id_list: list[in
     if not isinstance(message_header, Tag) or not isinstance(message_body, Tag):
         raise RuntimeError("Bus realtime API response is missing header or body")
     result_code = required_text(message_header, "resultCode").strip()
+    if result_code in NO_DATA_RESULT_CODES:
+        return BusRealtimeSnapshot(stop_id, tuple(route_id_list), [])
     if result_code not in {"0", "00"}:
         result_message_item = message_header.find("resultMessage")
         result_message = result_message_item.text.strip() if isinstance(result_message_item, Tag) else "Unknown error"

@@ -1,9 +1,11 @@
 import asyncio
+import logging
 import os
 import time
 from collections import defaultdict
+from datetime import timedelta
 
-from sqlalchemy import and_, select, delete
+from sqlalchemy import and_, select, delete, func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
@@ -12,6 +14,25 @@ from models import BusRouteStop, BusRealtime
 from scripts.location import refresh_bus_route_data
 from scripts.realtime import BusRealtimeSnapshot, get_realtime_data
 from utils.database import get_db_engine, get_master_db_engine
+
+DEFAULT_STALE_TTL_SECONDS = 120
+
+
+def _stale_ttl_seconds() -> int:
+    raw_value = os.getenv("REALTIME_STALE_TTL_SECONDS")
+    if raw_value is None:
+        return DEFAULT_STALE_TTL_SECONDS
+    try:
+        value = int(raw_value)
+    except ValueError:
+        value = 0
+    if value <= 0:
+        logging.warning(
+            "Invalid REALTIME_STALE_TTL_SECONDS=%r (must be a positive integer); using %d",
+            raw_value, DEFAULT_STALE_TTL_SECONDS,
+        )
+        return DEFAULT_STALE_TTL_SECONDS
+    return value
 
 
 async def main(iteration: int = 0):
@@ -58,6 +79,13 @@ async def execute_script(session, iteration: int = 0):
         if snapshot.arrival_items:
             insert_statement = insert(BusRealtime).values(snapshot.arrival_items)
             session.execute(insert_statement)
+    if snapshots:
+        # Drop rows that no successful fetch refreshed, e.g. stops whose fetch
+        # raised, so stale arrivals do not linger. Uses the database clock.
+        stale_ttl_seconds = _stale_ttl_seconds()
+        session.execute(delete(BusRealtime).where(
+            BusRealtime.last_updated_time < func.now() - timedelta(seconds=stale_ttl_seconds)
+        ))
     if iteration == 0:
         try:
             await refresh_bus_route_data(session)

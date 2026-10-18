@@ -1,9 +1,11 @@
+import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 
-from main import execute_script
+from main import _stale_ttl_seconds, execute_script
 from scripts.realtime import BusRealtimeSnapshot, parse_realtime_data
 
 
@@ -21,8 +23,18 @@ EMPTY_RESPONSE = """
 ERROR_RESPONSE = """
 <response>
   <msgHeader>
-    <resultCode>4</resultCode>
+    <resultCode>1</resultCode>
     <resultMessage>잘못된 정류소 ID입니다.</resultMessage>
+  </msgHeader>
+  <msgBody />
+</response>
+"""
+
+NO_DATA_RESPONSE = """
+<response>
+  <msgHeader>
+    <resultCode>4</resultCode>
+    <resultMessage>운행중인 버스가 없습니다.</resultMessage>
   </msgHeader>
   <msgBody />
 </response>
@@ -63,6 +75,14 @@ def test_unsuccessful_api_response_is_not_an_empty_snapshot():
         parse_realtime_data(ERROR_RESPONSE, 216000379, [216000061])
 
 
+def test_no_data_result_code_is_an_empty_snapshot():
+    snapshot = parse_realtime_data(NO_DATA_RESPONSE, 216000379, [216000061])
+
+    assert snapshot.stop_id == 216000379
+    assert snapshot.route_ids == (216000061,)
+    assert snapshot.arrival_items == []
+
+
 def test_arrival_response_is_parsed_into_snapshot():
     snapshot = parse_realtime_data(ARRIVAL_RESPONSE, 216000379, [216000061])
 
@@ -72,11 +92,34 @@ def test_arrival_response_is_parsed_into_snapshot():
     assert snapshot.arrival_items[0]["remaining_seat_count"] == 41
 
 
+def test_stale_ttl_defaults_to_120_when_unset(monkeypatch):
+    monkeypatch.delenv("REALTIME_STALE_TTL_SECONDS", raising=False)
+
+    assert _stale_ttl_seconds() == 120
+
+
+def test_stale_ttl_uses_configured_value(monkeypatch):
+    monkeypatch.setenv("REALTIME_STALE_TTL_SECONDS", "300")
+
+    assert _stale_ttl_seconds() == 300
+
+
+@pytest.mark.parametrize("raw_value", ["abc", "0"])
+def test_stale_ttl_falls_back_to_120_for_invalid_value(monkeypatch, caplog, raw_value):
+    monkeypatch.setenv("REALTIME_STALE_TTL_SECONDS", raw_value)
+
+    with caplog.at_level(logging.WARNING):
+        assert _stale_ttl_seconds() == 120
+
+    assert any("REALTIME_STALE_TTL_SECONDS" in record.getMessage() for record in caplog.records)
+
+
 @pytest.mark.asyncio
 async def test_successful_empty_stop_is_cleared_and_failed_stop_is_preserved():
     session = MagicMock(spec=Session)
     session.execute.side_effect = [
         [(216000379, 216000061), (216000138, 216000068)],
+        MagicMock(),
         MagicMock(),
     ]
     empty_snapshot = BusRealtimeSnapshot(216000379, (216000061,), [])
@@ -87,11 +130,15 @@ async def test_successful_empty_stop_is_cleared_and_failed_stop_is_preserved():
     ):
         await execute_script(session)
 
-    assert session.execute.call_count == 2
-    delete_statement = session.execute.call_args_list[-1].args[0]
+    assert session.execute.call_count == 3
+    delete_statement = session.execute.call_args_list[1].args[0]
     params = delete_statement.compile().params
     assert params["stop_id_1"] == 216000379
     assert params["route_id_1"] == [216000061]
+    cleanup_statement = session.execute.call_args_list[2].args[0]
+    compiled_cleanup = str(cleanup_statement.compile(dialect=postgresql.dialect()))
+    assert compiled_cleanup.startswith("DELETE FROM bus_realtime")
+    assert "bus_realtime.last_updated_time < now() -" in compiled_cleanup
     session.commit.assert_called_once_with()
 
 
